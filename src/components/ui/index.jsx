@@ -1,14 +1,22 @@
 // ══════════════════════════════════════════════════════════════════
 // 공통 UI 컴포넌트
 // ══════════════════════════════════════════════════════════════════
+import { useMemo } from "react";
 
 const CHAR_IMG = "/character.png";
 
+// 애니메이션은 src/index.css에서 관리
+
 export function Stars() {
-  const stars = Array.from({length:60}, (_,i) => ({
-    id:i, x:Math.random()*100, y:Math.random()*100,
-    s:Math.random()*2+.4, d:Math.random()*3+1.5,
-  }));
+  // useMemo로 마운트 시 한 번만 생성 — 리렌더링마다 새로 만들지 않음
+  const stars = useMemo(() => Array.from({length:50}, (_,i) => ({
+    id:i,
+    x: Math.random()*100,
+    y: Math.random()*100,
+    s: Math.random()*2+.4,
+    d: Math.random()*3+1.5,
+  })), []);
+
   return (
     <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0}}>
       {stars.map(s => (
@@ -18,15 +26,6 @@ export function Stars() {
           opacity:.5, animation:`twinkle ${s.d}s ease-in-out infinite alternate`,
         }}/>
       ))}
-      <style>{`
-        @keyframes twinkle { from{opacity:.1} to{opacity:.8} }
-        @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes glow { 0%,100%{text-shadow:0 0 10px #c084fc,0 0 24px #7c3aed} 50%{text-shadow:0 0 20px #e9d5ff,0 0 40px #a78bfa} }
-        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-        @keyframes bounce { 0%,100%{transform:translateY(0);opacity:.4} 50%{transform:translateY(-5px);opacity:1} }
-        @keyframes particleFloat { 0%{transform:translateY(0) translateX(0);opacity:0} 20%{opacity:1} 100%{transform:translateY(-80px) translateX(20px);opacity:0} }
-        @keyframes shimmer { 0%{opacity:.4} 50%{opacity:1} 100%{opacity:.4} }
-      `}</style>
     </div>
   );
 }
