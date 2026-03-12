@@ -1,172 +1,231 @@
 // ══════════════════════════════════════════════════════════════════
-// 공통 UI 컴포넌트
+// 공통 UI 컴포넌트 — 클린 화이트 / 웹툰 페르소나 스타일
 // ══════════════════════════════════════════════════════════════════
-import { useMemo } from "react";
 
-const CHAR_IMG = "/character.png";
+// 페르소나별 테마 컬러
+export const PERSONA = {
+  taeo: {
+    name: "태오",
+    role: "사주팔자",
+    emoji: "☯️",
+    img: "/characters/taeo.png",
+    color: "#2D6BE4",       // 진한 블루
+    bg: "#EEF4FF",          // 연한 블루
+    badge: "#2D6BE4",
+  },
+  luna: {
+    name: "루나",
+    role: "타로카드",
+    emoji: "🃏",
+    img: "/characters/luna.png",
+    color: "#9B59B6",
+    bg: "#F5EEF8",
+    badge: "#9B59B6",
+  },
+  kairos: {
+    name: "카이로스",
+    role: "손금 분석",
+    emoji: "✋",
+    img: "/characters/kairos.png",
+    color: "#27AE60",
+    bg: "#EAFAF1",
+    badge: "#27AE60",
+  },
+  gaon: {
+    name: "가온",
+    role: "이름풀이",
+    emoji: "📜",
+    img: "/characters/gaon.png",
+    color: "#E67E22",
+    bg: "#FEF9E7",
+    badge: "#E67E22",
+  },
+};
 
-// 애니메이션은 src/index.css에서 관리
-
-export function Stars() {
-  // useMemo로 마운트 시 한 번만 생성 — 리렌더링마다 새로 만들지 않음
-  const stars = useMemo(() => Array.from({length:50}, (_,i) => ({
-    id:i,
-    x: Math.random()*100,
-    y: Math.random()*100,
-    s: Math.random()*2+.4,
-    d: Math.random()*3+1.5,
-  })), []);
-
+// ── 페르소나 아바타
+export function PersonaAvatar({ persona, size = 48 }) {
+  const p = PERSONA[persona] ?? PERSONA.taeo;
   return (
-    <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0}}>
-      {stars.map(s => (
-        <div key={s.id} style={{
-          position:"absolute", left:`${s.x}%`, top:`${s.y}%`,
-          width:s.s, height:s.s, borderRadius:"50%", background:"white",
-          opacity:.5, animation:`twinkle ${s.d}s ease-in-out infinite alternate`,
-        }}/>
-      ))}
-    </div>
-  );
-}
-
-export function CharAvatar({ size=64, src=CHAR_IMG, name="월령선녀" }) {
-  return (
-    <div style={{flexShrink:0,textAlign:"center"}}>
+    <div style={{ flexShrink: 0 }}>
       <div style={{
-        width:size, height:size, borderRadius:"50%",
-        border:"1.5px solid rgba(192,132,252,.5)",
-        background:`url(${src}) center top / cover, linear-gradient(160deg,#1a0533,#0f0a2e)`,
-      }}/>
-      <div style={{color:"#a78bfa",fontSize:9,marginTop:3,letterSpacing:.5}}>{name}</div>
+        width: size, height: size, borderRadius: "50%",
+        background: `${p.bg} url(${p.img}) center/cover no-repeat`,
+        border: `2px solid ${p.color}22`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: size * 0.45,
+        overflow: "hidden",
+      }}>
+        {/* 이미지 없으면 이모지 fallback */}
+        <span style={{ lineHeight: 1 }}>{p.emoji}</span>
+      </div>
+      <p style={{
+        textAlign: "center", fontSize: 10, color: "#999",
+        marginTop: 3, letterSpacing: 0.3,
+      }}>{p.name}</p>
     </div>
   );
 }
 
-export function Bubble({children, style={}}) {
+// ── 캐릭터 말풍선 (웹툰 스타일)
+export function CharBubble({ persona = "taeo", text, children }) {
+  const p = PERSONA[persona] ?? PERSONA.taeo;
   return (
     <div style={{
-      background:"rgba(15,5,40,.9)", border:"1px solid rgba(192,132,252,.35)",
-      borderRadius:"6px 18px 18px 18px", padding:"14px 18px",
-      boxShadow:"0 4px 20px rgba(109,40,217,.25)", backdropFilter:"blur(12px)",
-      ...style,
+      display: "flex", gap: 10, alignItems: "flex-start",
+      marginBottom: 16, animation: "fadeUp .35s ease",
     }}>
-      {children}
-    </div>
-  );
-}
-
-export function CharRow({text, children, charSrc=CHAR_IMG, charName="월령선녀"}) {
-  return (
-    <div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:18,animation:"fadeIn .5s ease"}}>
-      <CharAvatar size={56} src={charSrc} name={charName}/>
-      <div style={{flex:1}}>
-        <Bubble>
-          {text && <p style={{color:"#e9d5ff",margin:0,lineHeight:1.95,fontSize:14,whiteSpace:"pre-wrap"}}>{text}</p>}
-          {children}
-        </Bubble>
-      </div>
-    </div>
-  );
-}
-
-export function UserRow({text}) {
-  return (
-    <div style={{display:"flex",justifyContent:"flex-end",marginBottom:18,animation:"fadeIn .4s ease"}}>
+      <PersonaAvatar persona={persona} size={44} />
       <div style={{
-        maxWidth:"70%", background:"rgba(109,40,217,.28)",
-        border:"1px solid rgba(167,139,250,.4)",
-        borderRadius:"18px 6px 18px 18px", padding:"12px 16px",
+        maxWidth: "78%",
+        background: "#FFFFFF",
+        border: `1.5px solid ${p.color}22`,
+        borderRadius: "4px 16px 16px 16px",
+        padding: "12px 16px",
+        boxShadow: "0 2px 12px rgba(0,0,0,.06)",
       }}>
-        <p style={{color:"#e9d5ff",margin:0,fontSize:14,lineHeight:1.8}}>{text}</p>
+        {text && (
+          <p style={{
+            color: "#1A1A2E", margin: 0, lineHeight: 1.85,
+            fontSize: 14, whiteSpace: "pre-wrap",
+          }}>{text}</p>
+        )}
+        {children}
       </div>
     </div>
   );
 }
 
-export function TypingRow({ charSrc=CHAR_IMG, charName="월령선녀" }) {
+// ── 유저 말풍선
+export function UserBubble({ text }) {
   return (
-    <div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:18}}>
-      <CharAvatar size={56} src={charSrc} name={charName}/>
-      <Bubble style={{padding:"14px 18px"}}>
-        <div style={{display:"flex",gap:5}}>
-          {[0,1,2].map(i => (
+    <div style={{
+      display: "flex", justifyContent: "flex-end",
+      marginBottom: 16, animation: "fadeUp .3s ease",
+    }}>
+      <div style={{
+        maxWidth: "72%",
+        background: "#1A1A2E",
+        borderRadius: "16px 4px 16px 16px",
+        padding: "12px 16px",
+      }}>
+        <p style={{ color: "#FFFFFF", margin: 0, fontSize: 14, lineHeight: 1.8 }}>{text}</p>
+      </div>
+    </div>
+  );
+}
+
+// ── 타이핑 인디케이터
+export function TypingBubble({ persona = "taeo" }) {
+  return (
+    <div style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 16 }}>
+      <PersonaAvatar persona={persona} size={44} />
+      <div style={{
+        background: "#FFFFFF", border: "1.5px solid #E8E8E8",
+        borderRadius: "4px 16px 16px 16px", padding: "14px 18px",
+        boxShadow: "0 2px 12px rgba(0,0,0,.06)",
+      }}>
+        <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+          {[0, 1, 2].map(i => (
             <div key={i} style={{
-              width:7, height:7, borderRadius:"50%", background:"#a78bfa",
-              animation:`bounce .9s ${i*.2}s infinite ease-in-out`,
-            }}/>
+              width: 7, height: 7, borderRadius: "50%", background: "#CCCCCC",
+              animation: `bounce .9s ${i * .2}s infinite ease-in-out`,
+            }} />
           ))}
         </div>
-      </Bubble>
+      </div>
     </div>
   );
 }
 
-export function InputRow({placeholder, value, onChange, onSubmit, type="text"}) {
+// ── 텍스트 입력창
+export function ChatInput({ placeholder, value, onChange, onSubmit, type = "text" }) {
   return (
-    <div style={{display:"flex",gap:8,marginTop:4}}>
+    <div style={{ display: "flex", gap: 8 }}>
       <input
         type={type} value={value}
         onChange={e => onChange(e.target.value)}
-        onKeyDown={e => e.key==="Enter" && onSubmit()}
+        onKeyDown={e => e.key === "Enter" && onSubmit()}
         placeholder={placeholder}
         style={{
-          flex:1, padding:"12px 16px", borderRadius:12,
-          background:"rgba(255,255,255,.06)", border:"1px solid rgba(167,139,250,.4)",
-          color:"#e9d5ff", fontSize:14, outline:"none", fontFamily:"inherit",
+          flex: 1, padding: "13px 16px", borderRadius: 12,
+          background: "#FFFFFF", border: "1.5px solid #E4E4E4",
+          color: "#1A1A2E", fontSize: 14, outline: "none",
+          transition: "border-color .2s",
         }}
+        onFocus={e => e.target.style.borderColor = "#2D6BE4"}
+        onBlur={e => e.target.style.borderColor = "#E4E4E4"}
       />
       <button onClick={onSubmit} style={{
-        padding:"12px 20px", borderRadius:12, cursor:"pointer",
-        background:"linear-gradient(135deg,#7c3aed,#db2777)",
-        border:"none", color:"white", fontSize:14, fontWeight:700,
-        fontFamily:"inherit", whiteSpace:"nowrap",
-      }}>전송 →</button>
+        padding: "13px 20px", borderRadius: 12, cursor: "pointer",
+        background: "#1A1A2E", border: "none",
+        color: "white", fontSize: 14, fontWeight: 700,
+        whiteSpace: "nowrap", transition: "opacity .2s",
+      }}
+        onMouseEnter={e => e.currentTarget.style.opacity = ".8"}
+        onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+      >전송</button>
     </div>
   );
 }
 
-export function ChoiceRow({options}) {
+// ── 선택지 버튼
+export function ChoiceButtons({ options }) {
   return (
-    <div style={{display:"flex",flexDirection:"column",gap:8,marginTop:8}}>
-      {options.map(({label, emoji, onClick}) => (
-        <button key={label} onClick={onClick}
-          style={{
-            padding:"13px 18px", borderRadius:12, cursor:"pointer", textAlign:"left",
-            background:"rgba(109,40,217,.12)", border:"1px solid rgba(167,139,250,.25)",
-            color:"#e9d5ff", fontSize:14, display:"flex", alignItems:"center", gap:10,
-            fontFamily:"inherit", transition:"all .2s",
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {options.map(({ label, emoji, onClick }) => (
+        <button key={label} onClick={onClick} style={{
+          padding: "13px 18px", borderRadius: 12, cursor: "pointer",
+          textAlign: "left", background: "#FFFFFF",
+          border: "1.5px solid #E4E4E4",
+          color: "#1A1A2E", fontSize: 14,
+          display: "flex", alignItems: "center", gap: 10,
+          transition: "all .15s",
+        }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = "#F0F4FF";
+            e.currentTarget.style.borderColor = "#2D6BE4";
           }}
-          onMouseEnter={e => { e.currentTarget.style.background="rgba(167,139,250,.2)"; e.currentTarget.style.borderColor="#a78bfa"; }}
-          onMouseLeave={e => { e.currentTarget.style.background="rgba(109,40,217,.12)"; e.currentTarget.style.borderColor="rgba(167,139,250,.25)"; }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = "#FFFFFF";
+            e.currentTarget.style.borderColor = "#E4E4E4";
+          }}
         >
-          {emoji && <span style={{fontSize:20}}>{emoji}</span>}
-          <span style={{flex:1}}>{label}</span>
-          <span style={{color:"#7c3aed",fontSize:12}}>→</span>
+          {emoji && <span style={{ fontSize: 18 }}>{emoji}</span>}
+          <span style={{ flex: 1 }}>{label}</span>
+          <span style={{ color: "#BBBBBB", fontSize: 12 }}>›</span>
         </button>
       ))}
     </div>
   );
 }
 
-// 공통 헤더 (뒤로가기 버튼 포함)
-export function SessionHeader({ title, onBack }) {
+// ── 세션 헤더
+export function SessionHeader({ title, subtitle, onBack, persona = "taeo" }) {
+  const p = PERSONA[persona] ?? PERSONA.taeo;
   return (
     <div style={{
-      position:"sticky", top:0, zIndex:20,
-      background:"rgba(10,5,24,.92)", backdropFilter:"blur(12px)",
-      borderBottom:"1px solid rgba(167,139,250,.2)",
-      padding:"12px 0", marginBottom:20,
-      display:"flex", alignItems:"center", gap:12,
+      position: "sticky", top: 0, zIndex: 20,
+      background: "rgba(247,248,250,.95)", backdropFilter: "blur(12px)",
+      borderBottom: "1px solid #EEEEEE",
+      padding: "12px 16px", marginBottom: 16,
+      display: "flex", alignItems: "center", gap: 12,
     }}>
       <button onClick={onBack} style={{
-        background:"rgba(167,139,250,.12)", border:"1px solid rgba(167,139,250,.25)",
-        color:"#c4b5fd", borderRadius:8, padding:"7px 14px",
-        cursor:"pointer", fontSize:13, fontFamily:"inherit",
-      }}>← 돌아가기</button>
-      <div style={{flex:1,textAlign:"center"}}>
-        <span style={{color:"#c4b5fd",fontWeight:700,fontSize:15}}>{title}</span>
+        background: "none", border: "1.5px solid #E4E4E4",
+        color: "#666", borderRadius: 8, padding: "7px 12px",
+        cursor: "pointer", fontSize: 13, flexShrink: 0,
+      }}>← 뒤로</button>
+      <div style={{ flex: 1, textAlign: "center" }}>
+        <div style={{ fontWeight: 700, fontSize: 15, color: "#1A1A2E" }}>{title}</div>
+        {subtitle && <div style={{ fontSize: 11, color: "#999", marginTop: 1 }}>{subtitle}</div>}
       </div>
+      <div style={{
+        width: 36, height: 36, borderRadius: "50%",
+        background: `${p.bg} url(${p.img}) center/cover`,
+        border: `2px solid ${p.color}33`,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: 18, flexShrink: 0,
+      }}>{p.emoji}</div>
     </div>
   );
 }

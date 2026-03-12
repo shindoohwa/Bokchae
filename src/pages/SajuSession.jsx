@@ -1,25 +1,28 @@
 import { useState, useEffect, useRef } from "react";
 import { askClaude } from "../utils/api";
 import {
-  CharRow, UserRow, TypingRow, InputRow, ChoiceRow, SessionHeader
+  PERSONA, CharBubble, UserBubble, TypingBubble,
+  ChatInput, ChoiceButtons, SessionHeader,
 } from "../components/ui";
 import {
-  천간오행, 지지오행, 오행색, 오행이모지,
+  천간오행, 지지오행, 오행색,
   getYearGanji, getMonthGanji, getDayGanji, getHourGanji,
-  analyzeOhaeng, getDominantOhaeng, getDaeun
+  analyzeOhaeng, getDominantOhaeng, getDaeun,
 } from "../utils/saju";
 
-// 사주 세션에서 사용하는 캐릭터 설정
-const CHAR_SRC = "/character.png";
-const CHAR_NAME = "월령선녀";
+const PERSONA_KEY = "taeo";
+const p = PERSONA[PERSONA_KEY];
 
-// 오행 → localStorage에 프로필 저장 (타로 등 다른 서비스에서 참조)
+// 오행 → localStorage 저장
 function saveOhaengProfile(ohaeng, name) {
   try {
-    const dominant = getDominantOhaeng(ohaeng);
-    localStorage.setItem("bokchae_ohaeng", JSON.stringify({ ohaeng, dominant, name }));
+    localStorage.setItem("bokchae_ohaeng", JSON.stringify({
+      ohaeng, dominant: getDominantOhaeng(ohaeng), name,
+    }));
   } catch {}
 }
+
+const SECTION_ICONS = ["🌟", "🧠", "📅", "💕", "💰", "🌿", "💬"];
 
 export default function SajuSession({ onBack }) {
   const [step, setStep] = useState("init");
@@ -29,206 +32,234 @@ export default function SajuSession({ onBack }) {
   const [result, setResult] = useState(null);
   const [sections, setSections] = useState([]);
   const [shown, setShown] = useState(0);
-  const [loadingAI, setLoadingAI] = useState(false);
+  const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
 
-  const scroll = () => setTimeout(() => bottomRef.current?.scrollIntoView({ behavior:"smooth" }), 80);
-  const addC = (text) => { setMsgs(p => [...p, { t:"c", text, id:Date.now()+Math.random() }]); scroll(); };
-  const addU = (text) => { setMsgs(p => [...p, { t:"u", text, id:Date.now()+Math.random() }]); scroll(); };
+  const scroll = () => setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 80);
+  const addC = text => { setMsgs(m => [...m, { t:"c", text, id: Date.now() + Math.random() }]); scroll(); };
+  const addU = text => { setMsgs(m => [...m, { t:"u", text, id: Date.now() + Math.random() }]); scroll(); };
 
   useEffect(() => {
     setTimeout(() => {
-      addC("어서 오세요...\n달빛이 당신을 이곳으로 이끌었군요.\n\n저는 월령선녀입니다. 사주팔자로 당신 운명의 실을 읽어드리겠습니다.\n\n먼저 이름을 알려주시겠어요?");
+      addC("안녕하세요.\n저는 태오입니다. 사주팔자로 당신의 운명을 읽어드릴게요.\n\n먼저 이름을 알려주시겠어요?");
       setStep("name");
-    }, 700);
+    }, 600);
   }, []);
 
   const doName = () => {
     if (!inp.trim()) return;
-    const name = inp.trim(); setUd(p => ({...p,name})); addU(name); setInp("");
-    setTimeout(() => { addC(`${name}님이시군요, 좋은 이름입니다.\n\n성별을 알려주세요.`); setStep("gender"); }, 500);
-    scroll();
+    const name = inp.trim();
+    setUd(u => ({...u, name})); addU(name); setInp("");
+    setTimeout(() => { addC(`${name}님이군요.\n성별을 알려주세요.`); setStep("gender"); }, 400);
   };
-  const doGender = (g) => {
-    setUd(p => ({...p,gender:g})); addU(g==="여"?"여성":"남성");
-    setTimeout(() => { addC("알겠습니다.\n\n태어난 연도를 알려주세요. (예: 1995)"); setStep("year"); }, 500);
-    scroll();
+  const doGender = g => {
+    setUd(u => ({...u, gender:g})); addU(g === "여" ? "여성" : "남성");
+    setTimeout(() => { addC("태어난 연도를 알려주세요. (예: 1995)"); setStep("year"); }, 400);
   };
   const doYear = () => {
-    const y = parseInt(inp); if (!y||y<1900||y>2010) return;
-    setUd(p => ({...p,year:inp})); addU(`${inp}년`); setInp("");
-    setTimeout(() => { addC("태어난 월을 알려주세요. (1~12)"); setStep("month"); }, 500);
-    scroll();
+    const y = parseInt(inp);
+    if (!y || y < 1900 || y > 2010) return;
+    setUd(u => ({...u, year:inp})); addU(`${inp}년`); setInp("");
+    setTimeout(() => { addC("태어난 월을 알려주세요. (1~12)"); setStep("month"); }, 400);
   };
   const doMonth = () => {
-    const m = parseInt(inp); if (!m||m<1||m>12) return;
-    setUd(p => ({...p,month:inp})); addU(`${inp}월`); setInp("");
-    setTimeout(() => { addC("태어난 일을 알려주세요. (1~31)"); setStep("day"); }, 500);
-    scroll();
+    const m = parseInt(inp);
+    if (!m || m < 1 || m > 12) return;
+    setUd(u => ({...u, month:inp})); addU(`${inp}월`); setInp("");
+    setTimeout(() => { addC("태어난 일을 알려주세요. (1~31)"); setStep("day"); }, 400);
   };
   const doDay = () => {
-    const d = parseInt(inp); if (!d||d<1||d>31) return;
-    setUd(p => ({...p,day:inp})); addU(`${inp}일`); setInp("");
-    setTimeout(() => { addC("태어난 시각을 알고 계신가요?\n정확할수록 사주가 더욱 세밀해집니다."); setStep("hour_ask"); }, 500);
-    scroll();
+    const d = parseInt(inp);
+    if (!d || d < 1 || d > 31) return;
+    setUd(u => ({...u, day:inp})); addU(`${inp}일`); setInp("");
+    setTimeout(() => { addC("태어난 시각을 알고 계신가요?"); setStep("hour_ask"); }, 400);
   };
-  const doHourAsk = (know) => {
+  const doHourAsk = know => {
     if (know) {
-      addU("알고 있습니다");
-      setTimeout(() => { addC("태어난 시각을 입력해주세요. (0~23)"); setStep("hour"); }, 500);
+      addU("알고 있어요");
+      setTimeout(() => { addC("태어난 시각을 입력해주세요. (0~23)"); setStep("hour"); }, 400);
     } else {
-      setUd(p => ({...p,hour:""})); addU("모릅니다");
-      setTimeout(() => doConfirm({...ud,hour:""}), 500);
+      setUd(u => ({...u, hour:""})); addU("모르겠어요");
+      setTimeout(() => doConfirm({...ud, hour:""}), 400);
     }
-    scroll();
   };
   const doHour = () => {
-    const h = parseInt(inp); if (isNaN(h)||h<0||h>23) return;
-    const updated = {...ud,hour:inp}; setUd(updated); addU(`${inp}시`); setInp("");
-    setTimeout(() => doConfirm(updated), 500);
-    scroll();
+    const h = parseInt(inp);
+    if (isNaN(h) || h < 0 || h > 23) return;
+    const updated = {...ud, hour:inp};
+    setUd(updated); addU(`${inp}시`); setInp("");
+    setTimeout(() => doConfirm(updated), 400);
   };
-  const doConfirm = (u) => {
-    const info = u || ud;
-    addC(`감사합니다, ${info.name}님.\n\n입력하신 정보입니다.\n\n이름: ${info.name}\n성별: ${info.gender}성\n생년월일: ${info.year}년 ${info.month}월 ${info.day}일${info.hour?` ${info.hour}시`:""}\n\n이대로 사주를 풀어드릴까요?`);
-    setUd(info); setStep("confirm"); scroll();
+  const doConfirm = info => {
+    const u = info || ud;
+    addC(`확인할게요.\n\n이름: ${u.name}\n성별: ${u.gender}성\n생년월일: ${u.year}년 ${u.month}월 ${u.day}일${u.hour ? ` ${u.hour}시` : ""}\n\n이대로 사주를 풀어드릴까요?`);
+    setUd(u); setStep("confirm");
   };
 
-  const doStart = async (u) => {
-    addU("맞습니다, 풀어주세요");
-    const y=parseInt(u.year), m=parseInt(u.month), d=parseInt(u.day), h=u.hour?parseInt(u.hour):null;
-    const 년=getYearGanji(y), 월=getMonthGanji(y,m), 일=getDayGanji(y,m,d);
-    const 시=h!==null?getHourGanji(h,일.간):null;
-    const saju=[년,월,일,...(시?[시]:[])];
-    const ohaeng=analyzeOhaeng(saju);
-    const daeun=getDaeun(년,월,u.gender,y);
-    setResult({년,월,일,시,ohaeng,daeun,일간:일.간});
-    // 오행 프로필 저장 → 타로 등 다른 서비스에서 참조
+  const doStart = async u => {
+    addU("네, 풀어주세요");
+    const y = parseInt(u.year), m = parseInt(u.month), d = parseInt(u.day);
+    const h = u.hour ? parseInt(u.hour) : null;
+    const 년 = getYearGanji(y), 월 = getMonthGanji(y, m), 일 = getDayGanji(y, m, d);
+    const 시 = h !== null ? getHourGanji(h, 일.간) : null;
+    const saju = [년, 월, 일, ...(시 ? [시] : [])];
+    const ohaeng = analyzeOhaeng(saju);
+    const daeun = getDaeun(년, 월, u.gender, y);
+    setResult({ 년, 월, 일, 시, ohaeng, daeun });
     saveOhaengProfile(ohaeng, u.name);
-    setLoadingAI(true); setStep("reading"); scroll();
+    setLoading(true); setStep("reading"); scroll();
 
-    const sajuStr=`년주:${년.간}${년.지} 월주:${월.간}${월.지} 일주:${일.간}${일.지}${시?` 시주:${시.간}${시.지}`:""}`;
-    const ohStr=Object.entries(ohaeng).map(([k,v])=>`${k}(${v})`).join(" ");
+    const sajuStr = `년주:${년.간}${년.지} 월주:${월.간}${월.지} 일주:${일.간}${일.지}${시 ? ` 시주:${시.간}${시.지}` : ""}`;
+    const ohStr = Object.entries(ohaeng).map(([k,v]) => `${k}(${v})`).join(" ");
 
     try {
       const text = await askClaude({
-        system: "당신은 월령선녀입니다. 달빛과 별빛으로 사주를 읽는 신비로운 무녀로서, 따뜻하고 시적인 말투로 1인칭 대화체로 한국어로 답하세요.",
-        prompt: `[의뢰인] ${u.name}(${u.gender}성), ${u.year}년생\n[사주] ${sajuStr}\n[오행] ${ohStr}\n\n당신은 '월령선녀'라는 신비로운 무녀입니다. 의뢰인에게 직접 말하듯 1인칭으로 사주를 풀어주세요.\n\n아래 순서대로 ## 제목 형식으로:\n## 타고난 기운\n## 성격과 기질\n## 올해의 운세 (${new Date().getFullYear()}년)\n## 사랑과 인연\n## 재물과 직업\n## 건강\n## 월령선녀의 한마디\n\n각 항목 3~4문장, ${u.name}님을 자연스럽게 포함, 시적이고 신비로운 말투로.`,
+        system: "당신은 태오입니다. 사주팔자를 읽는 AI 페르소나로서, 차분하고 통찰력 있는 말투로 1인칭 대화체로 한국어로 답하세요.",
+        prompt: `[의뢰인] ${u.name}(${u.gender}성), ${u.year}년생\n[사주] ${sajuStr}\n[오행] ${ohStr}\n\n아래 순서대로 ## 제목 형식으로 사주를 풀어주세요:\n## 타고난 기운\n## 성격과 기질\n## 올해의 운세 (${new Date().getFullYear()}년)\n## 사랑과 인연\n## 재물과 직업\n## 건강\n## 태오의 한마디\n\n각 항목 3~4문장, ${u.name}님을 자연스럽게 포함, 차분하고 진지한 말투로.`,
       });
       const secs = text.split(/(?=^## )/m).filter(Boolean).map(s => {
         const lines = s.trim().split("\n");
-        return { title: lines[0].replace("## ","").trim(), body: lines.slice(1).join("\n").trim() };
+        return { title: lines[0].replace("## ", "").trim(), body: lines.slice(1).join("\n").trim() };
       });
-      setSections(secs); setLoadingAI(false); setStep("reveal");
-      for (let i=0; i<secs.length; i++) {
-        await new Promise(r => setTimeout(r, i===0?300:1000));
-        setShown(i+1); scroll();
+      setSections(secs); setLoading(false); setStep("reveal");
+      for (let i = 0; i < secs.length; i++) {
+        await new Promise(r => setTimeout(r, i === 0 ? 300 : 900));
+        setShown(i + 1); scroll();
       }
       setStep("done");
     } catch {
-      setLoadingAI(false);
-      addC("기운이 흐트러졌습니다... 다시 시도해주세요.");
+      setLoading(false);
+      addC("오류가 발생했습니다. 다시 시도해주세요.");
     }
-    scroll();
   };
 
-  const icons = ["🌟","🧠","📅","💕","💰","🌿","🌙"];
-
   return (
-    <div style={{maxWidth:640,margin:"0 auto",padding:"0 16px 100px",position:"relative",zIndex:1}}>
-      <SessionHeader title="☯️ 월령선녀의 사주풀이" onBack={onBack} />
+    <div style={{ minHeight: "100vh", background: "#F7F8FA", display: "flex", flexDirection: "column" }}>
+      <SessionHeader
+        title="태오의 사주풀이"
+        subtitle="사주팔자 · 오행 분석"
+        onBack={onBack}
+        persona="taeo"
+      />
 
-      {msgs.map(msg => msg.t==="c"
-        ? <CharRow key={msg.id} text={msg.text} charSrc={CHAR_SRC} charName={CHAR_NAME}/>
-        : <UserRow key={msg.id} text={msg.text}/>
-      )}
-      {loadingAI && <TypingRow charSrc={CHAR_SRC} charName={CHAR_NAME}/>}
+      {/* 메시지 영역 */}
+      <div style={{ flex: 1, maxWidth: 640, margin: "0 auto", width: "100%", padding: "0 16px 120px" }}>
 
-      {(step==="reveal"||step==="done") && sections.slice(0,shown).map((sec,i) => (
-        <CharRow key={i} charSrc={CHAR_SRC} charName={CHAR_NAME}>
-          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
-            <span style={{fontSize:20}}>{icons[i]||"✨"}</span>
-            <span style={{color:"#c4b5fd",fontWeight:700,fontSize:15}}>{sec.title}</span>
-          </div>
-          <p style={{color:"#e9d5ff",margin:0,lineHeight:2,fontSize:14,whiteSpace:"pre-wrap"}}>{sec.body}</p>
-        </CharRow>
-      ))}
+        {msgs.map(msg =>
+          msg.t === "c"
+            ? <CharBubble key={msg.id} persona="taeo" text={msg.text} />
+            : <UserBubble key={msg.id} text={msg.text} />
+        )}
 
-      {step==="done" && result && (
-        <CharRow charSrc={CHAR_SRC} charName={CHAR_NAME}>
-          <p style={{color:"#c4b5fd",fontWeight:700,fontSize:14,margin:"0 0 12px"}}>📋 사주 원국 & 대운</p>
-          <div style={{display:"grid",gridTemplateColumns:`repeat(${result.시?4:3},1fr)`,gap:6,marginBottom:12}}>
-            {[
-              {l:"년주",g:result.년,r:"초년"},
-              {l:"월주",g:result.월,r:"청년"},
-              {l:"일주",g:result.일,r:"중년"},
-              ...(result.시?[{l:"시주",g:result.시,r:"말년"}]:[]),
-            ].map(p => (
-              <div key={p.l} style={{background:"rgba(0,0,0,.35)",borderRadius:10,padding:"10px 4px",textAlign:"center"}}>
-                <div style={{color:"#6d28d9",fontSize:10,marginBottom:3}}>{p.l}</div>
-                <div style={{fontSize:22,fontWeight:800,color:오행색[천간오행[p.g.간]]}}>{p.g.간}</div>
-                <div style={{fontSize:18,fontWeight:700,color:오행색[지지오행[p.g.지]]}}>{p.g.지}</div>
-                <div style={{fontSize:9,color:"rgba(167,139,250,.5)",marginTop:2}}>{p.r}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{overflowX:"auto",paddingBottom:4}}>
-            <div style={{display:"flex",gap:5,minWidth:"max-content"}}>
-              {result.daeun.map((du,i) => (
-                <div key={i} style={{
-                  minWidth:52, background:"rgba(109,40,217,.2)",
-                  border:"1px solid rgba(167,139,250,.2)",
-                  borderRadius:8, padding:"7px 4px", textAlign:"center",
+        {loading && <TypingBubble persona="taeo" />}
+
+        {/* 사주 풀이 섹션 순차 공개 */}
+        {(step === "reveal" || step === "done") && sections.slice(0, shown).map((sec, i) => (
+          <CharBubble key={i} persona="taeo">
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+              <span style={{ fontSize: 18 }}>{SECTION_ICONS[i] || "✨"}</span>
+              <span style={{ fontWeight: 700, fontSize: 14, color: "#1A1A2E" }}>{sec.title}</span>
+            </div>
+            <p style={{ color: "#333", margin: 0, lineHeight: 1.9, fontSize: 14, whiteSpace: "pre-wrap" }}>
+              {sec.body}
+            </p>
+          </CharBubble>
+        ))}
+
+        {/* 사주 원국 & 대운 */}
+        {step === "done" && result && (
+          <CharBubble persona="taeo">
+            <p style={{ fontWeight: 700, fontSize: 13, color: "#1A1A2E", marginBottom: 12 }}>📋 사주 원국 & 대운</p>
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${result.시 ? 4 : 3}, 1fr)`,
+              gap: 6, marginBottom: 14,
+            }}>
+              {[
+                { l:"년주", g:result.년, r:"초년" },
+                { l:"월주", g:result.월, r:"청년" },
+                { l:"일주", g:result.일, r:"중년" },
+                ...(result.시 ? [{ l:"시주", g:result.시, r:"말년" }] : []),
+              ].map(({ l, g, r }) => (
+                <div key={l} style={{
+                  background: "#F7F8FA", borderRadius: 10,
+                  padding: "10px 4px", textAlign: "center",
+                  border: "1px solid #EEEEEE",
                 }}>
-                  <div style={{color:"#6d28d9",fontSize:9}}>{du.시작년}~</div>
-                  <div style={{fontSize:15,fontWeight:800,color:오행색[천간오행[du.간]]}}>{du.간}</div>
-                  <div style={{fontSize:13,fontWeight:700,color:오행색[지지오행[du.지]]}}>{du.지}</div>
-                  <div style={{color:"#a78bfa",fontSize:9,marginTop:1}}>{du.나이}대</div>
+                  <div style={{ fontSize: 10, color: "#AAAAAA", marginBottom: 4 }}>{l}</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: 오행색[천간오행[g.간]] }}>{g.간}</div>
+                  <div style={{ fontSize: 17, fontWeight: 700, color: 오행색[지지오행[g.지]] }}>{g.지}</div>
+                  <div style={{ fontSize: 9, color: "#CCCCCC", marginTop: 3 }}>{r}</div>
                 </div>
               ))}
             </div>
-          </div>
-        </CharRow>
-      )}
+            <div style={{ overflowX: "auto", paddingBottom: 4 }}>
+              <div style={{ display: "flex", gap: 5, minWidth: "max-content" }}>
+                {result.daeun.map((du, i) => (
+                  <div key={i} style={{
+                    minWidth: 50, background: "#FFFFFF",
+                    border: "1px solid #EEEEEE",
+                    borderRadius: 8, padding: "7px 4px", textAlign: "center",
+                  }}>
+                    <div style={{ fontSize: 9, color: "#CCCCCC" }}>{du.시작년}~</div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: 오행색[천간오행[du.간]] }}>{du.간}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 오행색[지지오행[du.지]] }}>{du.지}</div>
+                    <div style={{ fontSize: 9, color: "#AAAAAA", marginTop: 1 }}>{du.나이}대</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CharBubble>
+        )}
 
-      {step==="done" && <CharRow text="풀이를 마칩니다. 달빛이 언제나 당신 곁을 비추기를... 🌙" charSrc={CHAR_SRC} charName={CHAR_NAME}/>}
-      {step==="done" && (
-        <button onClick={onBack} style={{
-          width:"100%", padding:"14px 0", borderRadius:12, cursor:"pointer",
-          background:"rgba(109,40,217,.2)", border:"1px solid rgba(167,139,250,.35)",
-          color:"#c4b5fd", fontSize:15, fontFamily:"inherit", marginTop:4,
-        }}>🌙 처음으로 돌아가기</button>
-      )}
+        {step === "done" && (
+          <CharBubble persona="taeo" text="풀이를 마칩니다. 길한 날을 고르는 데 도움이 되길 바랍니다." />
+        )}
+        {step === "done" && (
+          <button onClick={onBack} style={{
+            width: "100%", padding: "14px", borderRadius: 12,
+            background: "#1A1A2E", border: "none",
+            color: "#FFFFFF", fontSize: 15, fontWeight: 700,
+            cursor: "pointer", marginTop: 4,
+          }}>처음으로 돌아가기</button>
+        )}
 
-      <div ref={bottomRef}/>
+        <div ref={bottomRef} />
+      </div>
 
+      {/* 하단 입력 고정 */}
       <div style={{
-        position:"fixed", bottom:0, left:0, right:0,
-        background:"rgba(10,5,24,.95)", borderTop:"1px solid rgba(167,139,250,.2)",
-        padding:"12px 16px", zIndex:20, backdropFilter:"blur(12px)",
+        position: "fixed", bottom: 0, left: 0, right: 0,
+        background: "rgba(247,248,250,.97)", borderTop: "1px solid #EEEEEE",
+        padding: "12px 16px", backdropFilter: "blur(12px)",
       }}>
-        <div style={{maxWidth:640,margin:"0 auto"}}>
-          {step==="name"      && <InputRow placeholder="이름을 입력하세요" value={inp} onChange={setInp} onSubmit={doName}/>}
-          {step==="gender"    && <ChoiceRow options={[{label:"여성",emoji:"👩",onClick:()=>doGender("여")},{label:"남성",emoji:"👨",onClick:()=>doGender("남")}]}/>}
-          {step==="year"      && <InputRow placeholder="출생 연도 (예: 1995)" value={inp} onChange={setInp} onSubmit={doYear} type="number"/>}
-          {step==="month"     && <InputRow placeholder="출생 월 (1~12)" value={inp} onChange={setInp} onSubmit={doMonth} type="number"/>}
-          {step==="day"       && <InputRow placeholder="출생 일 (1~31)" value={inp} onChange={setInp} onSubmit={doDay} type="number"/>}
-          {step==="hour_ask"  && <ChoiceRow options={[{label:"시각을 알고 있어요",emoji:"⏰",onClick:()=>doHourAsk(true)},{label:"잘 모릅니다",emoji:"❓",onClick:()=>doHourAsk(false)}]}/>}
-          {step==="hour"      && <InputRow placeholder="태어난 시각 (0~23)" value={inp} onChange={setInp} onSubmit={doHour} type="number"/>}
-          {step==="confirm"   && (
-            <div style={{display:"flex",gap:10}}>
-              <button onClick={()=>doStart(ud)} style={{
-                flex:2, padding:"13px 0", borderRadius:12, cursor:"pointer",
-                background:"linear-gradient(135deg,#7c3aed,#db2777)",
-                border:"none", color:"white", fontSize:15, fontWeight:700, fontFamily:"inherit",
-              }}>✨ 사주 풀어주세요</button>
-              <button onClick={()=>{
-                setMsgs([]); setUd({name:"",gender:"",year:"",month:"",day:"",hour:""});
-                setTimeout(()=>{ addC("다시 처음부터 시작하겠습니다.\n이름을 알려주세요."); setStep("name"); },300);
+        <div style={{ maxWidth: 640, margin: "0 auto" }}>
+          {step === "name"      && <ChatInput placeholder="이름을 입력하세요" value={inp} onChange={setInp} onSubmit={doName} />}
+          {step === "gender"    && <ChoiceButtons options={[
+            { label:"여성", emoji:"👩", onClick:()=>doGender("여") },
+            { label:"남성", emoji:"👨", onClick:()=>doGender("남") },
+          ]}/>}
+          {step === "year"      && <ChatInput placeholder="출생 연도 (예: 1995)" value={inp} onChange={setInp} onSubmit={doYear} type="number" />}
+          {step === "month"     && <ChatInput placeholder="출생 월 (1~12)" value={inp} onChange={setInp} onSubmit={doMonth} type="number" />}
+          {step === "day"       && <ChatInput placeholder="출생 일 (1~31)" value={inp} onChange={setInp} onSubmit={doDay} type="number" />}
+          {step === "hour_ask"  && <ChoiceButtons options={[
+            { label:"시각을 알고 있어요", emoji:"⏰", onClick:()=>doHourAsk(true) },
+            { label:"잘 모르겠어요",     emoji:"❓", onClick:()=>doHourAsk(false) },
+          ]}/>}
+          {step === "hour"      && <ChatInput placeholder="태어난 시각 (0~23)" value={inp} onChange={setInp} onSubmit={doHour} type="number" />}
+          {step === "confirm"   && (
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => doStart(ud)} style={{
+                flex: 2, padding: "13px", borderRadius: 12, cursor: "pointer",
+                background: "#1A1A2E", border: "none",
+                color: "white", fontSize: 15, fontWeight: 700,
+              }}>사주 풀어주세요 ✨</button>
+              <button onClick={() => {
+                setMsgs([]); setUd({ name:"", gender:"", year:"", month:"", day:"", hour:"" });
+                setTimeout(() => { addC("다시 시작할게요.\n이름을 알려주세요."); setStep("name"); }, 200);
               }} style={{
-                flex:1, padding:"13px 0", borderRadius:12, cursor:"pointer",
-                background:"rgba(255,255,255,.05)", border:"1px solid rgba(167,139,250,.3)",
-                color:"#a78bfa", fontSize:14, fontFamily:"inherit",
+                flex: 1, padding: "13px", borderRadius: 12, cursor: "pointer",
+                background: "#F0F0F0", border: "none", color: "#666", fontSize: 14,
               }}>다시 입력</button>
             </div>
           )}
