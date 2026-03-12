@@ -1,0 +1,19 @@
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+.DS_Store
+*.log
+
+# 루트에 남아있는 구버전 파일들 (src/ 로 이전 완료)
+/App.jsx
+/api-claude.js
+/api-helper.js
+/index-html.html
+/index-css.css
+/main-jsx.txt
+/package-json.json
+/vite-config.js
+/env-example.sh
+*.s
