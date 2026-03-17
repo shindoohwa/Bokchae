@@ -258,9 +258,9 @@ export default function SajuSession({ onBack }) {
         setShown(i + 1);
         scroll();
       }
-    } catch {
+    } catch (err) {
       setStep("form");
-      setError("오류가 발생했습니다. 다시 시도해주세요.");
+      setError(err.message || "오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
 
