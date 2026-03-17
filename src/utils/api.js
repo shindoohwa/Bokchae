@@ -5,6 +5,17 @@ export async function askClaude({ system, prompt, max_tokens = 2000 }) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ system, prompt, max_tokens }),
   })
+
   const data = await res.json()
-  return data.content?.[0]?.text || '응답을 불러오지 못했습니다.'
+
+  if (!res.ok) {
+    throw new Error(data.error || `API 오류 (${res.status})`)
+  }
+
+  const text = data.content?.[0]?.text
+  if (!text) {
+    throw new Error('응답 형식이 올바르지 않습니다.')
+  }
+
+  return text
 }

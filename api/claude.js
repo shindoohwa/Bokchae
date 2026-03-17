@@ -15,11 +15,11 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,  // 환경변수에서 읽음
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens,
         system,
         messages: [{ role: 'user', content: prompt }],
@@ -27,6 +27,12 @@ export default async function handler(req, res) {
     })
 
     const data = await response.json()
+
+    if (!response.ok) {
+      console.error('Anthropic API error:', data)
+      return res.status(response.status).json({ error: data.error?.message || 'Anthropic API error' })
+    }
+
     return res.status(200).json(data)
   } catch (err) {
     console.error(err)
