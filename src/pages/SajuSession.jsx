@@ -198,6 +198,12 @@ export default function SajuSession({ onBack }) {
   const [loadingIdx, setLoadingIdx] = useState(0);
   const [error, setError] = useState("");
   const bottomRef = useRef(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   useEffect(() => {
     if (step !== "reading") return;
@@ -243,10 +249,12 @@ export default function SajuSession({ onBack }) {
         const lines = s.trim().split("\n");
         return { title: lines[0].replace("## ", "").trim(), body: lines.slice(1).join("\n").trim() };
       });
+      if (!mountedRef.current) return;
       setSections(secs);
       setStep("result");
       for (let i = 0; i < secs.length; i++) {
         await new Promise(r => setTimeout(r, i === 0 ? 400 : 1000));
+        if (!mountedRef.current) break;
         setShown(i + 1);
         scroll();
       }
