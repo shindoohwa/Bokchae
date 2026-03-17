@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════════
-// 공통 UI 컴포넌트 — 클린 화이트 / 웹툰 페르소나 스타일
+// 공통 UI 컴포넌트 — 순백 배경 / 페르소나 컬러 강조
 // ══════════════════════════════════════════════════════════════════
 
 // 페르소나별 테마 컬러
@@ -9,8 +9,8 @@ export const PERSONA = {
     role: "사주팔자",
     emoji: "☯️",
     img: "/characters/taeo.png",
-    color: "#2D6BE4",       // 진한 블루
-    bg: "#EEF4FF",          // 연한 블루
+    color: "#2D6BE4",
+    bg: "#EEF4FF",
     badge: "#2D6BE4",
   },
   luna: {
@@ -49,18 +49,16 @@ export function PersonaAvatar({ persona, size = 48 }) {
     <div style={{ flexShrink: 0 }}>
       <div style={{
         width: size, height: size, borderRadius: "50%",
-        background: `${p.bg} url(${p.img}) center/cover no-repeat`,
-        border: `2px solid ${p.color}22`,
+        background: `${p.color}18 url(${p.img}) center/cover no-repeat`,
+        border: `2px solid ${p.color}44`,
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: size * 0.45,
-        overflow: "hidden",
+        fontSize: size * 0.45, overflow: "hidden",
       }}>
-        {/* 이미지 없으면 이모지 fallback */}
         <span style={{ lineHeight: 1 }}>{p.emoji}</span>
       </div>
       <p style={{
-        textAlign: "center", fontSize: 10, color: "#999",
-        marginTop: 3, letterSpacing: 0.3,
+        textAlign: "center", fontSize: 10, color: p.color,
+        marginTop: 3, letterSpacing: 0.3, fontWeight: 600,
       }}>{p.name}</p>
     </div>
   );
@@ -78,10 +76,13 @@ export function CharBubble({ persona = "taeo", text, children }) {
       <div style={{
         maxWidth: "78%",
         background: "#FFFFFF",
-        border: `1.5px solid ${p.color}22`,
-        borderRadius: "4px 16px 16px 16px",
+        borderLeft: `3px solid ${p.color}`,
+        borderTop: "1px solid #F0F0F0",
+        borderRight: "1px solid #F0F0F0",
+        borderBottom: "1px solid #F0F0F0",
+        borderRadius: "0 16px 16px 16px",
         padding: "12px 16px",
-        boxShadow: "0 2px 12px rgba(0,0,0,.06)",
+        boxShadow: `0 2px 16px ${p.color}12`,
       }}>
         {text && (
           <p style={{
@@ -104,11 +105,11 @@ export function UserBubble({ text }) {
     }}>
       <div style={{
         maxWidth: "72%",
-        background: "#1A1A2E",
+        background: "#F2F2F2",
         borderRadius: "16px 4px 16px 16px",
         padding: "12px 16px",
       }}>
-        <p style={{ color: "#FFFFFF", margin: 0, fontSize: 14, lineHeight: 1.8 }}>{text}</p>
+        <p style={{ color: "#1A1A2E", margin: 0, fontSize: 14, lineHeight: 1.8 }}>{text}</p>
       </div>
     </div>
   );
@@ -116,18 +117,23 @@ export function UserBubble({ text }) {
 
 // ── 타이핑 인디케이터
 export function TypingBubble({ persona = "taeo" }) {
+  const p = PERSONA[persona] ?? PERSONA.taeo;
   return (
     <div style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 16 }}>
       <PersonaAvatar persona={persona} size={44} />
       <div style={{
-        background: "#FFFFFF", border: "1.5px solid #E8E8E8",
-        borderRadius: "4px 16px 16px 16px", padding: "14px 18px",
-        boxShadow: "0 2px 12px rgba(0,0,0,.06)",
+        background: "#FFFFFF",
+        borderLeft: `3px solid ${p.color}`,
+        border: "1px solid #F0F0F0",
+        borderRadius: "0 16px 16px 16px",
+        padding: "14px 18px",
+        boxShadow: `0 2px 16px ${p.color}12`,
       }}>
         <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
           {[0, 1, 2].map(i => (
             <div key={i} style={{
-              width: 7, height: 7, borderRadius: "50%", background: "#CCCCCC",
+              width: 7, height: 7, borderRadius: "50%", background: p.color,
+              opacity: 0.5,
               animation: `bounce .9s ${i * .2}s infinite ease-in-out`,
             }} />
           ))}
@@ -138,7 +144,7 @@ export function TypingBubble({ persona = "taeo" }) {
 }
 
 // ── 텍스트 입력창
-export function ChatInput({ placeholder, value, onChange, onSubmit, type = "text" }) {
+export function ChatInput({ placeholder, value, onChange, onSubmit, type = "text", color = "#2D6BE4" }) {
   return (
     <div style={{ display: "flex", gap: 8 }}>
       <input
@@ -148,20 +154,20 @@ export function ChatInput({ placeholder, value, onChange, onSubmit, type = "text
         placeholder={placeholder}
         style={{
           flex: 1, padding: "13px 16px", borderRadius: 12,
-          background: "#FFFFFF", border: "1.5px solid #E4E4E4",
+          background: "#FFFFFF", border: "1.5px solid #E8E8E8",
           color: "#1A1A2E", fontSize: 14, outline: "none",
           transition: "border-color .2s",
         }}
-        onFocus={e => e.target.style.borderColor = "#2D6BE4"}
-        onBlur={e => e.target.style.borderColor = "#E4E4E4"}
+        onFocus={e => e.target.style.borderColor = color}
+        onBlur={e => e.target.style.borderColor = "#E8E8E8"}
       />
       <button onClick={onSubmit} style={{
         padding: "13px 20px", borderRadius: 12, cursor: "pointer",
-        background: "#1A1A2E", border: "none",
+        background: color, border: "none",
         color: "white", fontSize: 14, fontWeight: 700,
         whiteSpace: "nowrap", transition: "opacity .2s",
       }}
-        onMouseEnter={e => e.currentTarget.style.opacity = ".8"}
+        onMouseEnter={e => e.currentTarget.style.opacity = ".82"}
         onMouseLeave={e => e.currentTarget.style.opacity = "1"}
       >전송</button>
     </div>
@@ -169,30 +175,32 @@ export function ChatInput({ placeholder, value, onChange, onSubmit, type = "text
 }
 
 // ── 선택지 버튼
-export function ChoiceButtons({ options }) {
+export function ChoiceButtons({ options, color = "#2D6BE4" }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
       {options.map(({ label, emoji, onClick }) => (
         <button key={label} onClick={onClick} style={{
           padding: "13px 18px", borderRadius: 12, cursor: "pointer",
           textAlign: "left", background: "#FFFFFF",
-          border: "1.5px solid #E4E4E4",
+          border: "1.5px solid #E8E8E8",
           color: "#1A1A2E", fontSize: 14,
           display: "flex", alignItems: "center", gap: 10,
           transition: "all .15s",
         }}
           onMouseEnter={e => {
-            e.currentTarget.style.background = "#F0F4FF";
-            e.currentTarget.style.borderColor = "#2D6BE4";
+            e.currentTarget.style.background = `${color}0F`;
+            e.currentTarget.style.borderColor = color;
+            e.currentTarget.style.color = color;
           }}
           onMouseLeave={e => {
             e.currentTarget.style.background = "#FFFFFF";
-            e.currentTarget.style.borderColor = "#E4E4E4";
+            e.currentTarget.style.borderColor = "#E8E8E8";
+            e.currentTarget.style.color = "#1A1A2E";
           }}
         >
           {emoji && <span style={{ fontSize: 18 }}>{emoji}</span>}
           <span style={{ flex: 1 }}>{label}</span>
-          <span style={{ color: "#BBBBBB", fontSize: 12 }}>›</span>
+          <span style={{ color: "#CCCCCC", fontSize: 12 }}>›</span>
         </button>
       ))}
     </div>
@@ -205,24 +213,25 @@ export function SessionHeader({ title, subtitle, onBack, persona = "taeo" }) {
   return (
     <div style={{
       position: "sticky", top: 0, zIndex: 20,
-      background: "rgba(247,248,250,.95)", backdropFilter: "blur(12px)",
-      borderBottom: "1px solid #EEEEEE",
+      background: "rgba(255,255,255,.97)", backdropFilter: "blur(12px)",
+      borderBottom: `2px solid ${p.color}22`,
       padding: "12px 16px", marginBottom: 16,
       display: "flex", alignItems: "center", gap: 12,
     }}>
       <button onClick={onBack} style={{
-        background: "none", border: "1.5px solid #E4E4E4",
-        color: "#666", borderRadius: 8, padding: "7px 12px",
+        background: "none", border: `1.5px solid ${p.color}44`,
+        color: p.color, borderRadius: 8, padding: "7px 12px",
         cursor: "pointer", fontSize: 13, flexShrink: 0,
+        fontWeight: 600,
       }}>← 뒤로</button>
       <div style={{ flex: 1, textAlign: "center" }}>
         <div style={{ fontWeight: 700, fontSize: 15, color: "#1A1A2E" }}>{title}</div>
-        {subtitle && <div style={{ fontSize: 11, color: "#999", marginTop: 1 }}>{subtitle}</div>}
+        {subtitle && <div style={{ fontSize: 11, color: p.color, marginTop: 1, fontWeight: 500 }}>{subtitle}</div>}
       </div>
       <div style={{
         width: 36, height: 36, borderRadius: "50%",
-        background: `${p.bg} url(${p.img}) center/cover`,
-        border: `2px solid ${p.color}33`,
+        background: `${p.color}18 url(${p.img}) center/cover`,
+        border: `2px solid ${p.color}55`,
         display: "flex", alignItems: "center", justifyContent: "center",
         fontSize: 18, flexShrink: 0,
       }}>{p.emoji}</div>

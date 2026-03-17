@@ -134,7 +134,7 @@ export default function SajuSession({ onBack }) {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F7F8FA", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", background: "#FFFFFF", display: "flex", flexDirection: "column" }}>
       <SessionHeader
         title="태오의 사주풀이"
         subtitle="사주팔자 · 오행 분석"
@@ -218,7 +218,7 @@ export default function SajuSession({ onBack }) {
         {step === "done" && (
           <button onClick={onBack} style={{
             width: "100%", padding: "14px", borderRadius: 12,
-            background: "#1A1A2E", border: "none",
+            background: p.color, border: "none",
             color: "#FFFFFF", fontSize: 15, fontWeight: 700,
             cursor: "pointer", marginTop: 4,
           }}>처음으로 돌아가기</button>
@@ -230,28 +230,28 @@ export default function SajuSession({ onBack }) {
       {/* 하단 입력 고정 */}
       <div style={{
         position: "fixed", bottom: 0, left: 0, right: 0,
-        background: "rgba(247,248,250,.97)", borderTop: "1px solid #EEEEEE",
+        background: "rgba(255,255,255,.97)", borderTop: `1px solid ${p.color}22`,
         padding: "12px 16px", backdropFilter: "blur(12px)",
       }}>
         <div style={{ maxWidth: 640, margin: "0 auto" }}>
-          {step === "name"      && <ChatInput placeholder="이름을 입력하세요" value={inp} onChange={setInp} onSubmit={doName} />}
-          {step === "gender"    && <ChoiceButtons options={[
+          {step === "name"      && <ChatInput placeholder="이름을 입력하세요" value={inp} onChange={setInp} onSubmit={doName} color={p.color} />}
+          {step === "gender"    && <ChoiceButtons color={p.color} options={[
             { label:"여성", emoji:"👩", onClick:()=>doGender("여") },
             { label:"남성", emoji:"👨", onClick:()=>doGender("남") },
           ]}/>}
-          {step === "year"      && <ChatInput placeholder="출생 연도 (예: 1995)" value={inp} onChange={setInp} onSubmit={doYear} type="number" />}
-          {step === "month"     && <ChatInput placeholder="출생 월 (1~12)" value={inp} onChange={setInp} onSubmit={doMonth} type="number" />}
-          {step === "day"       && <ChatInput placeholder="출생 일 (1~31)" value={inp} onChange={setInp} onSubmit={doDay} type="number" />}
-          {step === "hour_ask"  && <ChoiceButtons options={[
+          {step === "year"      && <ChatInput placeholder="출생 연도 (예: 1995)" value={inp} onChange={setInp} onSubmit={doYear} type="number" color={p.color} />}
+          {step === "month"     && <ChatInput placeholder="출생 월 (1~12)" value={inp} onChange={setInp} onSubmit={doMonth} type="number" color={p.color} />}
+          {step === "day"       && <ChatInput placeholder="출생 일 (1~31)" value={inp} onChange={setInp} onSubmit={doDay} type="number" color={p.color} />}
+          {step === "hour_ask"  && <ChoiceButtons color={p.color} options={[
             { label:"시각을 알고 있어요", emoji:"⏰", onClick:()=>doHourAsk(true) },
             { label:"잘 모르겠어요",     emoji:"❓", onClick:()=>doHourAsk(false) },
           ]}/>}
-          {step === "hour"      && <ChatInput placeholder="태어난 시각 (0~23)" value={inp} onChange={setInp} onSubmit={doHour} type="number" />}
+          {step === "hour"      && <ChatInput placeholder="태어난 시각 (0~23)" value={inp} onChange={setInp} onSubmit={doHour} type="number" color={p.color} />}
           {step === "confirm"   && (
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => doStart(ud)} style={{
                 flex: 2, padding: "13px", borderRadius: 12, cursor: "pointer",
-                background: "#1A1A2E", border: "none",
+                background: p.color, border: "none",
                 color: "white", fontSize: 15, fontWeight: 700,
               }}>사주 풀어주세요 ✨</button>
               <button onClick={() => {
